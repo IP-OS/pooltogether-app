@@ -6,7 +6,7 @@
 
 ## About
 
-A Flutter app for PoolTogether, made using a WebView.
+A Flutter app for [PoolTogether](https://app.pooltogether.com/fr), made using a WebView.
 
 This is an Unofficial app, not affiliated with PoolTogether.
 
@@ -25,4 +25,5 @@ Cookies and cache are kept on app close to keep you logged in.
 ## Miscellanous
 
 Since this app is not supported by PoolTogether, Android and iOS users will have to install the app manually.
-All rights reserved to PoolTogether.
+
+All rights reserved to [PoolTogether](https://github.com/pooltogether).
