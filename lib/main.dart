@@ -7,8 +7,11 @@ import "package:persistent_bottom_nav_bar/persistent_tab_view.dart";
 import 'package:pooltogetherapp/app.dart';
 import 'package:pooltogetherapp/explorer.dart';
 
+import 'background_service.dart';
+
 Future main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await initializeService();
 
   if (!kIsWeb && defaultTargetPlatform == TargetPlatform.android) {
     await InAppWebViewController.setWebContentsDebuggingEnabled(false);
