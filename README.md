@@ -20,7 +20,8 @@ Cookies and cache are kept on app close to keep you logged in.
 
 - [ ] Add a way to display notifications from the app when your win a prize.
 - [ ] Pre-load 3 main pages to make the app smoother (deposit, prize, acount).
-- [ ] Add ipa for iOS users (currently working on it).
+- [ ] Add ipa for iOS users.
+- [ ] Add a page with all last winnings (what about creating this page in the original app ?).
 
 ## Miscellanous
 
