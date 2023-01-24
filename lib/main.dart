@@ -1,9 +1,11 @@
-import 'dart:async';
-
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
+import "package:flutter/material.dart";
+import 'package:flutter/services.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
-import 'package:url_launcher/url_launcher.dart';
+import "package:persistent_bottom_nav_bar/persistent_tab_view.dart";
+import 'package:pooltogetherapp/app.dart';
+import 'package:pooltogetherapp/explorer.dart';
 
 Future main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -12,145 +14,69 @@ Future main() async {
     await InAppWebViewController.setWebContentsDebuggingEnabled(false);
   }
 
-  runApp(MaterialApp(home: new MyApp(), debugShowCheckedModeBanner: false,));
+  SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
+      statusBarColor: Color(0xff21064e)
+  ));
+
+  runApp(MaterialApp(
+    home: MyApp(),
+    debugShowCheckedModeBanner: false,
+  ));
 }
 
-class MyApp extends StatefulWidget {
-  @override
-  _MyAppState createState() => new _MyAppState();
-}
+PersistentTabController _controller = PersistentTabController(initialIndex: 0);
 
-class _MyAppState extends State<MyApp> {
-  final GlobalKey webViewKey = GlobalKey();
+class MyApp extends StatelessWidget {
+  List<Widget> _buildScreens() {
+    return [PoolTogetherPage(), ExplorerPage()];
+  }
 
-  InAppWebViewController? webViewController;
-  InAppWebViewSettings settings = InAppWebViewSettings(
-      useShouldOverrideUrlLoading: true,
-      mediaPlaybackRequiresUserGesture: false,
-      allowsInlineMediaPlayback: true,
-      iframeAllow: "camera; microphone",
-      iframeAllowFullscreen: true
-  );
-
-  PullToRefreshController? pullToRefreshController;
-  String url = "";
-  double progress = 0;
-  final urlController = TextEditingController();
-
-  @override
-  void initState() {
-    super.initState();
-
-    pullToRefreshController = kIsWeb ? null : PullToRefreshController(
-      settings: PullToRefreshSettings(
-        color: Colors.blue,
+  List<PersistentBottomNavBarItem> _navBarsItems() {
+    return [
+      PersistentBottomNavBarItem(
+        icon: const Icon(CupertinoIcons.home),
+        title: ("App"),
+        activeColorPrimary: Colors.white,
+        inactiveColorPrimary: const Color(0xff21064e),
       ),
-      onRefresh: () async {
-        if (defaultTargetPlatform == TargetPlatform.android) {
-          webViewController?.reload();
-        } else if (defaultTargetPlatform == TargetPlatform.iOS) {
-          webViewController?.loadUrl(
-              urlRequest: URLRequest(url: await webViewController?.getUrl()));
-        }
-      },
-    );
+      PersistentBottomNavBarItem(
+        icon: const Icon(CupertinoIcons.search),
+        title: ("Explorer"),
+        activeColorPrimary: Colors.white,
+        inactiveColorPrimary: const Color(0xff21064e),
+      ),
+    ];
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-        body: SafeArea(
-            child: Column(children: <Widget>[
-              Expanded(
-                child: Stack(
-                  children: [
-                    InAppWebView(
-                      key: webViewKey,
-                      initialUrlRequest:
-                      URLRequest(url: WebUri("https://app.pooltogether.com/deposit")),
-                      initialSettings: settings,
-                      // pullToRefreshController: pullToRefreshController,
-                      onWebViewCreated: (controller) {
-                        webViewController = controller;
-                      },
-                      onLoadStart: (controller, url) {
-                        setState(() {
-                          this.url = url.toString();
-                          urlController.text = this.url;
-                        });
-                      },
-                      onPermissionRequest: (controller, request) async {
-                        return PermissionResponse(
-                            resources: request.resources,
-                            action: PermissionResponseAction.GRANT);
-                      },
-                      shouldOverrideUrlLoading:
-                          (controller, navigationAction) async {
-                        var uri = navigationAction.request.url!;
-
-                        if(!uri.toString().contains("app.pooltogether.com")){
-                          if (await canLaunchUrl(uri)) {
-                            await launchUrl(uri);
-                          }
-                          return NavigationActionPolicy.CANCEL;
-                        }
-
-                        if (![
-                          "http",
-                          "https",
-                          "file",
-                          "chrome",
-                          "data",
-                          "javascript",
-                          "about"
-                        ].contains(uri.scheme)) {
-                          if (await canLaunchUrl(uri)) {
-                            // Launch the App
-                            await launchUrl(
-                              uri,
-                            );
-                            // and cancel the request
-                            return NavigationActionPolicy.CANCEL;
-                          }
-                        }
-
-                        return NavigationActionPolicy.ALLOW;
-                      },
-                      onLoadStop: (controller, url) async {
-                        pullToRefreshController?.endRefreshing();
-                        setState(() {
-                          this.url = url.toString();
-                          urlController.text = this.url;
-                        });
-                      },
-                      onReceivedError: (controller, request, error) {
-                        pullToRefreshController?.endRefreshing();
-                      },
-                      onProgressChanged: (controller, progress) {
-                        if (progress == 100) {
-                          pullToRefreshController?.endRefreshing();
-                        }
-                        setState(() {
-                          this.progress = progress / 100;
-                          urlController.text = this.url;
-                        });
-                      },
-                      onUpdateVisitedHistory: (controller, url, androidIsReload) {
-                        setState(() {
-                          this.url = url.toString();
-                          urlController.text = this.url;
-                        });
-                      },
-                      onConsoleMessage: (controller, consoleMessage) {
-                        print(consoleMessage);
-                      },
-                    ),
-                    progress < 1.0
-                        ? LinearProgressIndicator(value: progress)
-                        : Container(),
-                  ],
-                ),
-              ),
-            ])));
+    return PersistentTabView(
+      context,
+      controller: _controller,
+      screens: _buildScreens(),
+      items: _navBarsItems(),
+      confineInSafeArea: true,
+      backgroundColor: const Color(0xffd158d8),
+      handleAndroidBackButtonPress: true,
+      resizeToAvoidBottomInset: true,
+      stateManagement: true,
+      hideNavigationBarWhenKeyboardShows: true,
+      decoration: NavBarDecoration(
+        borderRadius: BorderRadius.circular(8.0),
+        colorBehindNavBar: const Color(0xffd158d8),
+      ),
+      popAllScreensOnTapOfSelectedTab: true,
+      popActionScreens: PopActionScreensType.all,
+      itemAnimationProperties: const ItemAnimationProperties(
+        duration: Duration(milliseconds: 200),
+        curve: Curves.ease,
+      ),
+      screenTransitionAnimation: const ScreenTransitionAnimation(
+        animateTabTransition: true,
+        curve: Curves.ease,
+        duration: Duration(milliseconds: 200),
+      ),
+      navBarStyle: NavBarStyle.style9,
+    );
   }
 }
