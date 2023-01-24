@@ -3,10 +3,15 @@
 [<img src="screenshot_01.png" height="300" />](screenshot_01.png)
 [<img src="screenshot_02.png" height="300" />](screenshot_02.png)
 [<img src="screenshot_03.png" height="300" />](screenshot_03.png)
+[<img src="screenshot_04.png" height="300" />](screenshot_04.png)
 
 ## About
 
 A Flutter app for [PoolTogether](https://app.pooltogether.com/fr), made using a WebView.
+
+This also fully works with [WalletConnect](https://walletconnect.org/) and [Coinbase Wallet](https://wallet.coinbase.com/).
+
+A full integration of [PoolExplorer](https://poolexplorer.win/) has been done to display the last winnings.
 
 This is an Unofficial app, not affiliated with PoolTogether.
 
